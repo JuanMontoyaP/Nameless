@@ -150,3 +150,17 @@ class UserService:
         )
 
         return user_models.UserInfo(username=username, **updated_user)
+
+    async def delete_user(self, username: str) -> user_models.UserID:
+        self.__check_db()
+
+        user_exist = await self.check_user_exist(username)
+
+        if not user_exist:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User does not exist"
+            )
+
+        deleted_user = await self.dynamodb.delete_item({'username': username})
+        return user_models.UserID(**deleted_user)

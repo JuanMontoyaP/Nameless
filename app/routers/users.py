@@ -125,3 +125,38 @@ async def update_user(
     """
     updated_data = await user_service.update_user(new_data.username, new_data)
     return updated_data
+
+
+@router.delete(
+
+    "/{username}",
+    status_code=status.HTTP_200_OK,
+    response_description="User has been deleted",
+    response_model=user_models.UserInfo,
+    summary="Delete a user"
+)
+async def delete_user(
+    username: Annotated[
+        str,
+        Path(
+            title="Username",
+            description="The username of the user to delete",
+            example="Mario64",
+            min_length=3,
+            max_length=50
+        )
+    ]
+):
+    """
+    Deletes a user with the specified username.
+
+    **Parameters**
+
+    - `username`: The username of the user to be deleted. It is a required parameter.
+
+    **Returns**
+
+    - The deleted user.
+    """
+    deleted_user = await user_service.delete_user(username)
+    return deleted_user
