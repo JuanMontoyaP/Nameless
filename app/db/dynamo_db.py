@@ -3,12 +3,13 @@ Connection to DynamoDB
 """
 
 import os
-from typing import List
+from typing import List, Dict
 from dotenv import load_dotenv
 
 import boto3
 from botocore.exceptions import ClientError
 from boto3.resources.base import ServiceResource
+from boto3.dynamodb.conditions import Key
 from fastapi.encoders import jsonable_encoder
 
 from ..utils.logs import LOGGER
@@ -119,7 +120,7 @@ class DynamoDB():
                 )
             else:
                 response = self.table.get_item(
-                    Key=item_to_get,
+                    Key=item_to_get
                 )
         except ClientError as err:
             LOGGER.error("Could not get item: %s",
@@ -131,3 +132,94 @@ class DynamoDB():
             return item
         except KeyError:
             return None
+
+    async def scan_item(self, key: str, item: str):
+        """
+        The `scan_item` method scans a table for items that match a given key and returns a list of
+        those items.
+
+        Params
+            - key [str]: The `key` parameter is a string that represents the key attribute of the 
+                item you want to scan for. It is used in the filter expression to specify the 
+                condition for scanning the items
+            - item [str]: The `item` parameter is a string that represents the value you want to 
+                filter on. The scan operation will return all items from the table that have a 
+                matching value for the specified key
+
+        Returns 
+            - A list of items that match the given key and item.
+        """
+        items = []
+        try:
+            response = self.table.scan(**{
+                'FilterExpression': Key(key).eq(item),
+            })
+
+            items.extend(response.get('Items', []))
+        except ClientError as err:
+            LOGGER.error("Could not scan user: %s",
+                         err.response['Error']['Message'])
+            raise
+
+        return items
+
+    async def update_item(
+        self,
+        item_id: Dict,
+        update_expression: str,
+        expression_attribute_values: Dict
+    ):
+        """
+        The `update_item` function updates an item in a table using the provided update expression
+        and attribute values.
+
+        Parameters
+            - `item_id` [Dict]: The `item_id` parameter is a dictionary that represents the primary 
+                key of the item you want to update in the table. It should contain the key-value
+                pairs that uniquely identify the item
+            - `update_expression` [str]: The `update_expression` parameter is a string that 
+                specifies the update operation to be performed on the item in the DynamoDB 
+                table. It uses a specific syntax to define the update operation, such as 
+                setting a new value for  an attribute or incrementing a numeric attribute
+            - `expression_attribute_values` [Dict]: The `expression_attribute_values` parameter is a 
+                dictionary that contains the values to be substituted in the update expression. The 
+                keys in the dictionary are placeholders in the update expression, and the values are 
+                the actual values to be used.
+
+        Returns
+            - The updated attributes of the item that was updated.
+        """
+        try:
+            response = self.table.update_item(
+                Key=item_id,
+                UpdateExpression=update_expression,
+                ExpressionAttributeValues=expression_attribute_values,
+                ReturnValues="UPDATED_NEW"
+            )
+        except ClientError as err:
+            LOGGER.error("Could not update user: %s",
+                         err.response['Error']['Message'])
+            raise
+
+        return response['Attributes']
+
+    async def delete_item(self, item_key: Dict):
+        """
+        The above function deletes an item from a table using the provided item key.
+
+        Params
+        - `item_key` [Dict]: The `item_key` parameter is a dictionary that represents the primary
+        key of the item you want to delete from the table. The primary key is used to uniquely 
+        identify an item in a DynamoDB table. The dictionary should contain the attribute names
+        as keys and their corresponding values as values.
+        """
+        try:
+            deleted_item = self.table.delete_item(
+                Key=item_key,
+                ReturnValues="ALL_OLD"
+            )
+            return deleted_item['Attributes']
+        except ClientError as err:
+            LOGGER.error("Could not update user: %s",
+                         err.response['Error']['Message'])
+            raise
