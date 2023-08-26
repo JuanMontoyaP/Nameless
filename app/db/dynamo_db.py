@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import boto3
 from botocore.exceptions import ClientError
 from boto3.resources.base import ServiceResource
+from boto3.dynamodb.conditions import Key
 from fastapi.encoders import jsonable_encoder
 
 from ..utils.logs import LOGGER
@@ -131,3 +132,33 @@ class DynamoDB():
             return item
         except KeyError:
             return None
+
+    async def scan_item(self, key: str, item: str):
+        """
+        The `scan_item` method scans a table for items that match a given key and returns a list of
+        those items.
+
+        Params
+            - key str: The `key` parameter is a string that represents the key attribute of the 
+                item you want to scan for. It is used in the filter expression to specify the 
+                condition for scanning the items
+            - item str: The `item` parameter is a string that represents the value you want to 
+                filter on. The scan operation will return all items from the table that have a 
+                matching value for the specified key
+
+        Returns 
+            - A list of items that match the given key and item.
+        """
+        items = []
+        try:
+            response = self.table.scan(**{
+                'FilterExpression': Key(key).eq(item),
+            })
+
+            items.extend(response.get('Items', []))
+        except ClientError as err:
+            LOGGER.error("Could not scan user: %s",
+                         err.response['Error']['Message'])
+            raise
+
+        return items

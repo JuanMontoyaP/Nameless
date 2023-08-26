@@ -45,15 +45,10 @@ async def get_a_user(
 )
 async def create_user(
     new_user: Annotated[
-        user_models.UserPassword,
+        user_models.UserData,
         Body(
             title="User to create",
-            description="The user to create",
-            example={
-                "username": "john",
-                "password": "secret123",
-                "email": "john@example.com"
-            }
+            description="The user to create"
         )
     ]
 ):
@@ -61,11 +56,13 @@ async def create_user(
     Creates a new user with the following information:
 
     - **username**
-    - **password**
     - **email**
+    - **password**
+    - **first_name**
+    - **last_name**
+    - **age**
 
     The password is hashed and stored in the database.
     """
     created_user = await user_service.create_user(new_user)
-
     return created_user.model_dump()
