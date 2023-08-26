@@ -120,7 +120,7 @@ class DynamoDB():
                 )
             else:
                 response = self.table.get_item(
-                    Key=item_to_get,
+                    Key=item_to_get
                 )
         except ClientError as err:
             LOGGER.error("Could not get item: %s",

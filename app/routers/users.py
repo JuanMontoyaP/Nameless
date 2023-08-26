@@ -15,7 +15,7 @@ router = APIRouter(
     prefix="/users",
     tags=["users"],
     dependencies=[],
-    responses={404: {"description": "Not found"}},
+    responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}},
 )
 
 user_service = UserService()
@@ -26,11 +26,35 @@ async def get_users():
     return {"users": "all users"}
 
 
-@router.get("/{user_id}")
+@router.get(
+    "/{username}",
+    status_code=status.HTTP_200_OK,
+    response_description="User found",
+    response_model=user_models.UserData
+)
 async def get_a_user(
-    user_id: Annotated[int, Path(title="The ID of the user")]
+    username: Annotated[
+        str,
+        Path(
+            title="Username",
+            description="The username of the user to get",
+            example="Mario64"
+        )
+    ]
 ):
-    return {"users": user_id}
+    """
+    Retrieves information about a user based on their username.
+
+    **Params** 
+
+    - `username [str]`: The `username` path parameter represents the username of the user to get.
+
+    **Returns** 
+
+    - The user information for the specified username.
+    """
+    user_info = await user_service.get_user(username)
+    return user_info
 
 
 @router.post(
