@@ -21,11 +21,6 @@ router = APIRouter(
 user_service = UserService()
 
 
-@router.get("/")
-async def get_users():
-    return {"users": "all users"}
-
-
 @router.get(
     "/{username}",
     status_code=status.HTTP_200_OK,
@@ -90,3 +85,43 @@ async def create_user(
     """
     created_user = await user_service.create_user(new_user)
     return created_user.model_dump()
+
+
+@router.put(
+    "/",
+    status_code=status.HTTP_200_OK,
+    response_description="User has been updated",
+    summary="Update a user",
+    response_model=user_models.UserInfo
+)
+async def update_user(
+    new_data: Annotated[
+        user_models.UserInfo,
+        Body(
+            title="User to update",
+            description="The user to update"
+        )
+    ]
+):
+    """
+    Updates a user's information using the provided new data.
+
+    **Body Parameter**
+
+    - `new_data` JSON file with the following fields:
+
+        - `username`: username of the user to be updated.
+        - `email`: new email of the user to be updated.
+        - `first_name`: new first name of the user to be updated.
+        - `last_name`: new last name of the user to be updated.
+        - `age`: new age of the user to be updated.
+
+        All fields are required and the username is the only field that can not
+        be updated.
+
+    **Returns** 
+
+    - The updated user information.
+    """
+    updated_data = await user_service.update_user(new_data.username, new_data)
+    return updated_data

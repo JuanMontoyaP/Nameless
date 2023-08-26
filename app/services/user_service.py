@@ -121,3 +121,32 @@ class UserService:
             )
 
         return user_models.UserInfo(**user)
+
+    async def update_user(self, username: str, new_data: user_models.UserInfo):
+        """
+        The `update_user` method updates the user information in the database with the provided 
+        new data.
+
+        Params
+            - username str: The username parameter is a string that represents the username of the
+                user whose information needs to be updated
+            - new_data UserInfo: It contains the updated information for a user, including the 
+                email, first name, last name, and age
+
+        Returns 
+            - An instance of the `UserInfo` class with the updated user information.
+        """
+
+        self.__check_db()
+        updated_user = await self.dynamodb.update_item(
+            {'username': username},
+            "Set email = :email, first_name = :first_name, last_name = :last_name, age = :age",
+            {
+                ':email': new_data.email,
+                ':first_name': new_data.first_name,
+                ':last_name': new_data.last_name,
+                ':age': new_data.age
+            }
+        )
+
+        return user_models.UserInfo(username=username, **updated_user)

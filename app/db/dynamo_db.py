@@ -3,7 +3,7 @@ Connection to DynamoDB
 """
 
 import os
-from typing import List
+from typing import List, Dict
 from dotenv import load_dotenv
 
 import boto3
@@ -162,3 +162,23 @@ class DynamoDB():
             raise
 
         return items
+
+    async def update_item(
+        self,
+        item_id: Dict,
+        update_expression: str,
+        expression_attribute_values: Dict
+    ):
+        try:
+            response = self.table.update_item(
+                Key=item_id,
+                UpdateExpression=update_expression,
+                ExpressionAttributeValues=expression_attribute_values,
+                ReturnValues="UPDATED_NEW"
+            )
+        except ClientError as err:
+            LOGGER.error("Could not update user: %s",
+                         err.response['Error']['Message'])
+            raise
+
+        return response['Attributes']
