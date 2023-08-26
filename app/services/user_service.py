@@ -54,7 +54,14 @@ class UserService:
 
     async def create_user(self, user: user_models.UserPassword) -> user_models.User:
         """
-        Create a user
+        The `create_user` method creates a new user in a database, checking if the username or email
+        already exist before creating the user.
+
+        Params 
+            - user UserPassword: The `user` parameter is an instance of the `UserPassword` model.
+
+        Returns 
+            - A new user object of type `User` of the created user.
         """
         new_user = user_models.UserID(
             user_id=uuid.uuid4(),
@@ -68,12 +75,14 @@ class UserService:
 
         self.__check_db()
 
-        user_exist = await self.check_user_exist(new_user.username, new_user.email)
+        user_exist = await self.check_user_exist(new_user.username)
+        email_exist = await self.check_user_exist(new_user.email, "email")
 
-        if user_exist:
+        if user_exist or email_exist:
+            msg = "Username already exist" if user_exist else "Email already exist"
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="User already exist"
+                detail=msg
             )
         await self.dynamodb.create_item(new_user)
 

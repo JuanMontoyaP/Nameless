@@ -79,12 +79,12 @@ async def create_user(
     """
     Creates a new user with the following information:
 
-    - **username**
-    - **email**
-    - **password**
-    - **first_name**
-    - **last_name**
-    - **age**
+    - `username`
+    - `email`
+    - `password`
+    - `first_name`
+    - `last_name`
+    - `age`
 
     The password is hashed and stored in the database.
     """
