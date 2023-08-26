@@ -30,7 +30,7 @@ async def get_users():
     "/{username}",
     status_code=status.HTTP_200_OK,
     response_description="User found",
-    response_model=user_models.UserData
+    response_model=user_models.UserInfo
 )
 async def get_a_user(
     username: Annotated[

@@ -39,9 +39,9 @@ class UserPassword(User):
     )
 
 
-class UserData(UserPassword):
+class UserInfo(User):
     """
-    This class contains all the user data.
+    This class contains all the user basic information
     """
     first_name: str = Field(
         ...,
@@ -69,6 +69,12 @@ class UserData(UserPassword):
         lt=150,
         examples=[25]
     )
+
+
+class UserData(UserInfo, UserPassword):
+    """
+    This class contains all the user data and password.
+    """
 
 
 class UserID(UserData):

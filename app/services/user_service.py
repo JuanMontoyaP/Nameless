@@ -88,7 +88,7 @@ class UserService:
 
         return new_user
 
-    async def get_user(self, username: str) -> user_models.UserData:
+    async def get_user(self, username: str) -> user_models.UserInfo:
         """
         The method `get_user` retrieves user data from a database based on a given username and 
         returns it as an instance of the `UserData` class.
@@ -110,8 +110,7 @@ class UserService:
                 "email",
                 "first_name",
                 "last_name",
-                "age",
-                "password",
+                "age"
             ]
         )
 
@@ -121,4 +120,4 @@ class UserService:
                 detail="User does not exist"
             )
 
-        return user_models.UserData(**user)
+        return user_models.UserInfo(**user)
